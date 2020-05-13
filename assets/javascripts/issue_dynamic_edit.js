@@ -2,7 +2,9 @@
  * OPTIONS DEFINED FROM CONFIGURATION FILE
  */
 var _CONF_FORCE_HTTPS = _CONF_FORCE_HTTPS || false;
-var _CONF_LISTENER_TYPE = _CONF_LISTENER_TYPE || "click";
+var _CONF_DISPLAY_EDIT_ICON = _CONF_DISPLAY_EDIT_ICON || "single";
+var _CONF_LISTENER_TYPE_VALUE = _CONF_LISTENER_TYPE_VALUE || "click";
+var _CONF_LISTENER_TYPE_ICON = _CONF_LISTENER_TYPE_ICON || "click";
 var _CONF_LISTENER_TARGET = _CONF_LISTENER_TARGET || "value";
 var _CONF_EXCLUDED_FIELD_ID = _CONF_EXCLUDED_FIELD_ID || [];
 
@@ -15,6 +17,14 @@ var LOCATION_HREF = typeof custom_location_href !== 'undefined' ? custom_locatio
 if (_CONF_FORCE_HTTPS) {
 	LOCATION_HREF = LOCATION_HREF.replace(/^http:\/\//i, 'https://');
 }
+
+/* Check if admin want to display all editable fields when hovering the whole details block 
+ * or if user has to hover every element to discover if (s)he can edit it
+ */
+if (_CONF_DISPLAY_EDIT_ICON === "block"){
+	$('body.controller-issues.action-show .issue.details').addClass('showDynamicEdit');
+}
+
 
 
 /* FontAwesome inclusion */
@@ -31,7 +41,7 @@ if (!document.getElementById(cssId)) {
 	head.appendChild(link);
 }
 
-$(document).on(_CONF_LISTENER_TYPE, function(e) {
+function editActionHandler(e) {
 	$('.issue .attributes .attribute .value').removeClass('edited');
 	// bind click to show edit block if click inside an edit box or on trigger, except button inside edit box
 	if(!$(e.target).closest('a.btn.btn-primary').length &&
@@ -55,7 +65,22 @@ $(document).on(_CONF_LISTENER_TYPE, function(e) {
 			}
 		}
 	}
-});
+}
+
+// Listen on events on a whole line for any field
+if(_CONF_LISTENER_TYPE_VALUE !== "none") {
+	$(document).on(_CONF_LISTENER_TYPE_VALUE, editActionHandler);
+} else {
+	$('body.controller-issues.action-show .issue.details').addClass('no-cursor');
+}
+
+// If a supplementary type of event is set specifically for the dynamic edit icon,
+// add another listener for it
+if (_CONF_LISTENER_TYPE_VALUE !== _CONF_LISTENER_TYPE_ICON && _CONF_LISTENER_TYPE_ICON !== "none") {
+	$(document).on(_CONF_LISTENER_TYPE_ICON, '.fa-pencil.dynamicEditIcon' , function (e) {
+		editActionHandler(e);
+	});
+}
 
 function isExcluded(elmt_id) {
 	return _CONF_EXCLUDED_FIELD_ID.indexOf(elmt_id) > -1;
@@ -70,7 +95,7 @@ function initEditFields() {
 			htmlCopy +
 			'<span class="showValue">' +
 			$('.details .attributes .status.attribute .value').html() +
-			'</span> <i class="fa fa-pencil fa-fw" aria-hidden="true"></i>'
+			'</span> <i class="fa fa-pencil dynamicEditIcon fa-fw" aria-hidden="true"></i>'
 		);
 	}
 
@@ -81,7 +106,7 @@ function initEditFields() {
 			htmlCopy +
 			'<span class="showValue">' +
 			$('.details .attributes .priority.attribute .value').html() +
-			'</span> <i class="fa fa-pencil fa-fw" aria-hidden="true"></i>'
+			'</span> <i class="fa fa-pencil dynamicEditIcon fa-fw" aria-hidden="true"></i>'
 		);
 	}
 
@@ -92,7 +117,7 @@ function initEditFields() {
 			htmlCopy +
 			'<span class="showValue">' +
 			$('.details .attributes .category.attribute .value').html() +
-			'</span> <i class="fa fa-pencil fa-fw" aria-hidden="true"></i>'
+			'</span> <i class="fa fa-pencil dynamicEditIcon fa-fw" aria-hidden="true"></i>'
 		);
 	}
 
@@ -102,7 +127,7 @@ function initEditFields() {
 		$('.details .attributes .progress.attribute .value').html(
 			htmlCopy +
 			'<span class="showValue">' +
-			$('.details .attributes .progress.attribute .value').html() + '</span> <i class="fa fa-pencil fa-fw" aria-hidden="true"></i>'
+			$('.details .attributes .progress.attribute .value').html() + '</span> <i class="fa fa-pencil dynamicEditIcon fa-fw" aria-hidden="true"></i>'
 		);
 	}
 
@@ -113,7 +138,7 @@ function initEditFields() {
 			htmlCopy +
 			'<span class="showValue">' +
 			$('.details .attributes .estimated-hours.attribute .value').html() +
-			'</span> <i class="fa fa-pencil fa-fw" aria-hidden="true"></i>'
+			'</span> <i class="fa fa-pencil dynamicEditIcon fa-fw" aria-hidden="true"></i>'
 		);
 	}
 
@@ -124,7 +149,7 @@ function initEditFields() {
 			htmlCopy +
 			'<span class="showValue">' +
 			$('.details .attributes .start-date.attribute .value').html() +
-			'</span> <i class="fa fa-pencil fa-fw" aria-hidden="true"></i>'
+			'</span> <i class="fa fa-pencil dynamicEditIcon fa-fw" aria-hidden="true"></i>'
 		);
 	}
 
@@ -135,7 +160,7 @@ function initEditFields() {
 			htmlCopy +
 			'<span class="showValue">' +
 			$('.details .attributes .due-date.attribute .value').html() +
-			'</span> <i class="fa fa-pencil fa-fw" aria-hidden="true"></i>'
+			'</span> <i class="fa fa-pencil dynamicEditIcon fa-fw" aria-hidden="true"></i>'
 		);
 	}
 
@@ -146,7 +171,7 @@ function initEditFields() {
 			htmlCopy +
 			'<span class="showValue">' +
 			$('.subject h3').html() +
-			'</span> <i class="fa fa-pencil fa-fw" aria-hidden="true"></i>'
+			'</span> <i class="fa fa-pencil dynamicEditIcon fa-fw" aria-hidden="true"></i>'
 		).addClass('value');
 	}
 
@@ -155,7 +180,7 @@ function initEditFields() {
 		$('#DescriptionInput').remove();
 		$('div.description .wiki').html(
 			htmlCopy +
-			' <i class="fa fa-pencil fa-fw" aria-hidden="true" style="float:right;"></i><span class="showValue">' +
+			' <i class="fa fa-pencil dynamicEditIcon fa-fw" aria-hidden="true" style="float:right;"></i><span class="showValue">' +
 			$('div.description .wiki').html() + '</span>'
 		).addClass('value');
 	}
@@ -174,7 +199,7 @@ function initEditFields() {
 			editHTML +
 			'<span class="showValue">' +
 			$('.details .attributes .assigned-to.attribute .value').html() +
-			'</span> <i class="fa fa-pencil fa-fw" aria-hidden="true"></i>'
+			'</span> <i class="fa fa-pencil dynamicEditIcon fa-fw" aria-hidden="true"></i>'
 		);
 	}
 
@@ -192,7 +217,7 @@ function initEditFields() {
 			editHTML +
 			'<span class="showValue">' +
 			$('.details .attributes .fixed-version.attribute .value').html() +
-			'</span> <i class="fa fa-pencil fa-fw" aria-hidden="true"></i>'
+			'</span> <i class="fa fa-pencil dynamicEditIcon fa-fw" aria-hidden="true"></i>'
 		);
 	}
 
@@ -230,7 +255,7 @@ function initEditFields() {
 					editHTML +
 					'<span class="showValue">' +
 					$('.details .attributes .cf_' + info.id + '.attribute .value').html() +
-					'</span> <i class="fa fa-pencil fa-fw" aria-hidden="true"></i>'
+					'</span> <i class="fa fa-pencil dynamicEditIcon fa-fw" aria-hidden="true"></i>'
 				);
 
 				if (info.field_format == "date") {
